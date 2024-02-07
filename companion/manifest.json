@@ -1,0 +1,33 @@
+{
+  "id": "riot-lolreplay",
+  "name": "riot-lolreplay",
+  "shortname": "LoL",
+  "description": "Module to control a League of Legends Replay",
+  "version": "0.0.0",
+  "license": "MIT",
+  "repository": "git+https://github.com/bitfocus/companion-module-your-module-name.git",
+  "bugs": "https://github.com/bitfocus/companion-module-your-module-name/issues",
+  "maintainers": [
+    {
+      "name": "Cynthia Ebert",
+      "email": "contact@cynthiaebert.de"
+    }
+  ],
+  "runtime": {
+    "type": "node18",
+    "api": "nodejs-ipc",
+    "apiVersion": "0.0.0",
+    "entrypoint": "..\\dist\\index.js"
+  },
+  "legacyIds": [],
+  "manufacturer": "Riot Games",
+  "products": ["League of Legends"],
+  "keywords": [
+    "LoL",
+    "League of Legends",
+    "Riot",
+    "Riot Games",
+    "Replay",
+    "LoLReplay"
+  ]
+}
