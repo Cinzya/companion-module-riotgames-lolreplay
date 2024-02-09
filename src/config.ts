@@ -3,6 +3,7 @@ import { Regex } from '@companion-module/base'
 
 export interface Config {
   host: string
+  apiPollingInterval: number
 }
 
 export const getConfigFields = (): SomeCompanionConfigField[] => {

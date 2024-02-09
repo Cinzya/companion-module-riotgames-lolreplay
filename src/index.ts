@@ -1,26 +1,75 @@
 import {
   InstanceBase,
   runEntrypoint,
-  CompanionFeedbackDefinitions,
-  CompanionHTTPRequest,
-  CompanionHTTPResponse,
   SomeCompanionConfigField,
+  InstanceStatus,
 } from '@companion-module/base'
 import { Config, getConfigFields } from './config'
-import { getUpgrades } from './upgrade'
+import { UpgradeScripts } from './upgrade'
+import { Variables } from './variables'
+import { Actions } from './actions'
+import { ReplayService } from './http'
+import {
+  setIntervalAsync,
+  clearIntervalAsync,
+  SetIntervalAsyncTimer,
+} from 'set-interval-async'
 
 class LoLInstance extends InstanceBase<Config> {
   constructor(internal: unknown) {
     super(internal)
-    this.instanceOptions.disableVariableValidation = true
   }
   public config: Config = {
     host: '',
+    apiPollingInterval: 250,
+  }
+  public apiInterval: SetIntervalAsyncTimer<unknown[]> | null = null
+  public variables: Variables | null = null
+  public actions: Actions | null = null
+  public lolreplay: ReplayService | null = null
+
+  public async init(config: Config): Promise<void> {
+    this.config = config
+    this.log('debug', `Process ID: ${process.pid}`)
+    this.lolreplay = new ReplayService(this, config)
+    this.variables = new Variables(this)
+    this.actions = new Actions(this, this.lolreplay)
+    this.updateInstance()
   }
 
-  public async init(config: Config): Promise<void> {}
+  public async destroy(): Promise<void> {
+    this.log('debug', 'destroy')
+    if (this.apiInterval) clearIntervalAsync(this.apiInterval)
+  }
 
-  public async destroy(): Promise<void> {}
+  public async initializeInterval(): Promise<void> {
+    const ipRegex = new RegExp(
+      '^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$',
+    )
+    if (this.apiInterval) clearIntervalAsync(this.apiInterval)
+    if (!ipRegex.test(this.config.host)) {
+      this.updateStatus(InstanceStatus.BadConfig, 'Invalid IP')
+      this.log(
+        'error',
+        `Invalid IP: ${this.config.host}, Test result: ${!ipRegex.test(this.config.host)}`,
+      )
+      return
+    }
+    this.log('debug', 'Connecting to LoL Replay API')
+    this.apiInterval = setIntervalAsync(async () => {
+      if (!this.lolreplay) {
+        this.updateStatus(
+          InstanceStatus.UnknownWarning,
+          'Replay service not initialized',
+        )
+        this.apiInterval && clearIntervalAsync(this.apiInterval)
+      } else {
+        this.updateStatus(InstanceStatus.Ok)
+        const data = await this.lolreplay.get()
+        if (data) this.variables?.UpdateVariable(data)
+      }
+    }, this.config.apiPollingInterval)
+  }
 
   /**
    * @param config new configuration data
@@ -36,13 +85,13 @@ class LoLInstance extends InstanceBase<Config> {
   }
 
   private updateInstance(): void {
-    // const actions = []
-    // const feedbacks = []
-    // this.setActionDefinitions(actions)
-    // this.setFeedbackDefinitions(feedbacks)
+    this.variables?.UpdateVariableDefinitions()
+    this.actions?.UpdateActionDefinitions()
+    this.initializeInterval()
+    return
   }
 }
 
 export = LoLInstance
 
-runEntrypoint(LoLInstance, getUpgrades())
+runEntrypoint(LoLInstance, UpgradeScripts)
