@@ -46,6 +46,7 @@ class Actions {
                         choices: [
                             { id: 'true', label: 'On' },
                             { id: 'false', label: 'Off' },
+                            { id: 'toggle', label: 'Toggle' },
                         ],
                     },
                 ];
@@ -54,6 +55,13 @@ class Actions {
                 name: `Set ${(0, utils_1.prettyfyStr)(key)}`,
                 options: options,
                 callback: ({ options }) => {
+                    if (options.value === 'toggle') {
+                        const currentValue = this.instance.getVariableValue(key);
+                        this.replayapi.post({
+                            [key]: currentValue === 'true' ? 'false' : 'true',
+                        });
+                        return;
+                    }
                     this.replayapi.post({ [key]: options.value });
                 },
             };
