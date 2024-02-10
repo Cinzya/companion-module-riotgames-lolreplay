@@ -64,7 +64,6 @@ class LoLInstance extends InstanceBase<Config> {
         )
         this.apiInterval && clearIntervalAsync(this.apiInterval)
       } else {
-        this.updateStatus(InstanceStatus.Ok)
         const data = await this.lolreplay.get()
         if (data) this.variables?.UpdateVariable(data)
       }

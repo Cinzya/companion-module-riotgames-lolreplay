@@ -19,6 +19,7 @@ export class ReplayService {
       path: '/replay/render',
       rejectUnauthorized: false,
       headers: { 'Content-Type': 'application/json' },
+      timeout: 5000,
     }
     return new Promise((resolve, reject) => {
       let all_data = ''
@@ -33,8 +34,22 @@ export class ReplayService {
           reject()
         })
         res.on('end', () => {
+          this.instance.updateStatus(InstanceStatus.Ok, 'Connected')
           resolve(JSON.parse(all_data))
         })
+      })
+      req.on('error', e => {
+        this.instance.log('error', e.message)
+        this.instance.updateStatus(InstanceStatus.UnknownError, e.message)
+        reject()
+      })
+      req.on('timeout', () => {
+        this.instance.log('error', 'Request timeout')
+        this.instance.updateStatus(
+          InstanceStatus.ConnectionFailure,
+          'Request timeout',
+        )
+        reject()
       })
       req.end()
     })
