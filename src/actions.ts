@@ -1,5 +1,5 @@
 import LoLInstance from './'
-import { replayAPIInstance } from './data'
+import { renderInstance, playbackInstance } from './data'
 import type {
   CompanionActionDefinitions,
   SomeCompanionActionInputField,
@@ -16,35 +16,36 @@ export class Actions {
     this.instance = instance
     this.replayapi = api
 
-    this.createPostActions()
+    this.createRenderActions()
   }
 
-  createPostActions(): void {
-    for (const [key, value] of Object.entries(replayAPIInstance)) {
-      const actionId = camelCaseToSnakeCase(key)
-      let options: SomeCompanionActionInputField[] = []
-      if (typeof value === 'number') {
-        options = [
+  createOptions(
+    type: string,
+    value: string | number | boolean,
+  ): SomeCompanionActionInputField[] {
+    switch (type) {
+      case 'number':
+        return [
           {
             type: 'number',
             id: 'value',
             label: 'Value',
-            default: value,
+            default: value as number,
             min: -100000,
             max: 100000,
           },
         ]
-      } else if (typeof value === 'string') {
-        options = [
+      case 'string':
+        return [
           {
             type: 'textinput',
             id: 'value',
             label: 'Value',
-            default: value,
+            default: value as string,
           },
         ]
-      } else if (typeof value === 'boolean') {
-        options = [
+      case 'boolean':
+        return [
           {
             type: 'dropdown',
             id: 'value',
@@ -57,21 +58,45 @@ export class Actions {
             ],
           },
         ]
-      }
-      this.actions[actionId] = {
-        name: `Set ${prettyfyStr(key)}`,
-        options: options,
-        callback: ({ options }) => {
-          if (options.value === 'toggle') {
-            const currentValue = this.instance.getVariableValue(key)
-            this.replayapi.post({
-              [key]: currentValue === 'true' ? 'false' : 'true',
-            })
-            return
-          }
-          this.replayapi.post({ [key]: options.value as string })
-        },
-      }
+      default:
+        return []
+    }
+  }
+
+  createAction(
+    key: string,
+    value: string | number | boolean,
+    endpoint: 'replay/render' | 'replay/playback',
+  ): void {
+    const actionId = camelCaseToSnakeCase(key)
+    const options = this.createOptions(typeof value, value)
+    this.actions[actionId] = {
+      name: `Set ${prettyfyStr(key)}`,
+      options,
+      callback: ({ options }) => {
+        if (options.value === 'toggle') {
+          const currentValue = this.instance.getVariableValue(key)
+          this.replayapi.post(endpoint, {
+            [key]: currentValue === 'true' ? 'false' : 'true',
+          })
+          return
+        }
+        this.replayapi.post(endpoint, {
+          [key]: options.value as string,
+        })
+      },
+    }
+  }
+
+  createRenderActions(): void {
+    for (const [key, value] of Object.entries(renderInstance)) {
+      this.createAction(key, value, 'replay/render')
+    }
+  }
+
+  createPlaybackActions(): void {
+    for (const [key, value] of Object.entries(playbackInstance)) {
+      this.createAction(key, value, 'replay/playback')
     }
   }
 

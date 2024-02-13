@@ -56,15 +56,18 @@ class LoLInstance extends base_1.InstanceBase {
             }
             this.log('debug', 'Connecting to LoL Replay API');
             this.apiInterval = (0, set_interval_async_1.setIntervalAsync)(() => __awaiter(this, void 0, void 0, function* () {
-                var _a;
+                var _a, _b;
                 if (!this.lolreplay) {
                     this.updateStatus(base_1.InstanceStatus.UnknownWarning, 'Replay service not initialized');
                     this.apiInterval && (0, set_interval_async_1.clearIntervalAsync)(this.apiInterval);
                 }
                 else {
-                    const data = yield this.lolreplay.get();
-                    if (data)
-                        (_a = this.variables) === null || _a === void 0 ? void 0 : _a.UpdateVariable(data);
+                    const renderData = yield this.lolreplay.get('replay/render');
+                    if (renderData)
+                        (_a = this.variables) === null || _a === void 0 ? void 0 : _a.UpdateVariable(renderData);
+                    const playbackData = yield this.lolreplay.get('replay/playback');
+                    if (playbackData)
+                        (_b = this.variables) === null || _b === void 0 ? void 0 : _b.UpdateVariable(playbackData);
                 }
             }), this.config.apiPollingInterval);
         });

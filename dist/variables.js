@@ -19,7 +19,8 @@ class Variables {
                 }
             });
         }
-        iterateKeys(data_1.replayAPIInstance);
+        iterateKeys(data_1.renderInstance);
+        iterateKeys(data_1.playbackInstance);
         this.variables = replayAPIKeys.map(key => ({
             variableId: key,
             name: (0, utils_1.prettyfyStr)(key),

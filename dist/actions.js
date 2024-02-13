@@ -8,14 +8,12 @@ class Actions {
         this.actions = {};
         this.instance = instance;
         this.replayapi = api;
-        this.createPostActions();
+        this.createRenderActions();
     }
-    createPostActions() {
-        for (const [key, value] of Object.entries(data_1.replayAPIInstance)) {
-            const actionId = (0, utils_1.camelCaseToSnakeCase)(key);
-            let options = [];
-            if (typeof value === 'number') {
-                options = [
+    createOptions(type, value) {
+        switch (type) {
+            case 'number':
+                return [
                     {
                         type: 'number',
                         id: 'value',
@@ -25,9 +23,8 @@ class Actions {
                         max: 100000,
                     },
                 ];
-            }
-            else if (typeof value === 'string') {
-                options = [
+            case 'string':
+                return [
                     {
                         type: 'textinput',
                         id: 'value',
@@ -35,9 +32,8 @@ class Actions {
                         default: value,
                     },
                 ];
-            }
-            else if (typeof value === 'boolean') {
-                options = [
+            case 'boolean':
+                return [
                     {
                         type: 'dropdown',
                         id: 'value',
@@ -50,21 +46,38 @@ class Actions {
                         ],
                     },
                 ];
-            }
-            this.actions[actionId] = {
-                name: `Set ${(0, utils_1.prettyfyStr)(key)}`,
-                options: options,
-                callback: ({ options }) => {
-                    if (options.value === 'toggle') {
-                        const currentValue = this.instance.getVariableValue(key);
-                        this.replayapi.post({
-                            [key]: currentValue === 'true' ? 'false' : 'true',
-                        });
-                        return;
-                    }
-                    this.replayapi.post({ [key]: options.value });
-                },
-            };
+            default:
+                return [];
+        }
+    }
+    createAction(key, value, endpoint) {
+        const actionId = (0, utils_1.camelCaseToSnakeCase)(key);
+        const options = this.createOptions(typeof value, value);
+        this.actions[actionId] = {
+            name: `Set ${(0, utils_1.prettyfyStr)(key)}`,
+            options,
+            callback: ({ options }) => {
+                if (options.value === 'toggle') {
+                    const currentValue = this.instance.getVariableValue(key);
+                    this.replayapi.post(endpoint, {
+                        [key]: currentValue === 'true' ? 'false' : 'true',
+                    });
+                    return;
+                }
+                this.replayapi.post(endpoint, {
+                    [key]: options.value,
+                });
+            },
+        };
+    }
+    createRenderActions() {
+        for (const [key, value] of Object.entries(data_1.renderInstance)) {
+            this.createAction(key, value, 'replay/render');
+        }
+    }
+    createPlaybackActions() {
+        for (const [key, value] of Object.entries(data_1.playbackInstance)) {
+            this.createAction(key, value, 'replay/playback');
         }
     }
     UpdateActionDefinitions() {

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.replayAPIInstance = void 0;
-exports.replayAPIInstance = {
+exports.playbackInstance = exports.renderInstance = void 0;
+exports.renderInstance = {
     banners: false,
     cameraAttached: false,
     cameraLookSpeed: 0,
@@ -88,4 +88,11 @@ exports.replayAPIInstance = {
         y: 0,
         z: 0,
     },
+};
+exports.playbackInstance = {
+    length: 0,
+    paused: false,
+    seeking: false,
+    speed: 1.0,
+    time: 0,
 };

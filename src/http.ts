@@ -4,6 +4,7 @@ import https from 'node:https'
 import { InstanceStatus } from '@companion-module/base'
 import { convertObjectValues } from './utils'
 
+type ReplayAPIPaths = 'replay/playback' | 'replay/render'
 export class ReplayService {
   private instance: LoLInstance
   private ip: string
@@ -12,11 +13,11 @@ export class ReplayService {
     this.instance = instance
   }
 
-  async get(): Promise<ReplayAPI | void> {
+  async get(path: ReplayAPIPaths): Promise<Render | Playback | void> {
     const options = {
       hostname: this.ip,
       port: 2999,
-      path: '/replay/render',
+      path: '/' + path,
       rejectUnauthorized: false,
       headers: { 'Content-Type': 'application/json' },
       timeout: 5000,
@@ -55,13 +56,15 @@ export class ReplayService {
     })
   }
 
-  async post(data: Record<string, string>): Promise<ReplayAPI | void> {
+  async post(
+    path: ReplayAPIPaths,
+    data: Record<string, string>,
+  ): Promise<Render | Playback | void> {
     const body = JSON.stringify(convertObjectValues(data))
-    this.instance.log('debug', `sending data to post: ${body}`)
     const options = {
       hostname: this.ip,
       port: 2999,
-      path: '/replay/render',
+      path: '/' + path,
       rejectUnauthorized: false,
       method: 'POST',
       headers: {
@@ -78,7 +81,7 @@ export class ReplayService {
         })
 
         res.on('end', () => {
-          this.instance.log('debug', `received data from post: ${all_data}`)
+          // this.instance.log('debug', `received data from post: ${all_data}`)
           resolve(JSON.parse(all_data))
         })
       })

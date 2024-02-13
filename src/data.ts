@@ -1,4 +1,4 @@
-export const replayAPIInstance: ReplayAPI = {
+export const renderInstance: Render = {
   banners: false,
   cameraAttached: false,
   cameraLookSpeed: 0,
@@ -85,4 +85,12 @@ export const replayAPIInstance: ReplayAPI = {
     y: 0,
     z: 0,
   },
+}
+
+export const playbackInstance: Playback = {
+  length: 0,
+  paused: false,
+  seeking: false,
+  speed: 1.0,
+  time: 0,
 }

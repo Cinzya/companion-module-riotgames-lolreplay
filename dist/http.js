@@ -21,12 +21,12 @@ class ReplayService {
         this.ip = config.host;
         this.instance = instance;
     }
-    get() {
+    get(path) {
         return __awaiter(this, void 0, void 0, function* () {
             const options = {
                 hostname: this.ip,
                 port: 2999,
-                path: '/replay/render',
+                path: '/' + path,
                 rejectUnauthorized: false,
                 headers: { 'Content-Type': 'application/json' },
                 timeout: 5000,
@@ -62,14 +62,13 @@ class ReplayService {
             });
         });
     }
-    post(data) {
+    post(path, data) {
         return __awaiter(this, void 0, void 0, function* () {
             const body = JSON.stringify((0, utils_1.convertObjectValues)(data));
-            this.instance.log('debug', `sending data to post: ${body}`);
             const options = {
                 hostname: this.ip,
                 port: 2999,
-                path: '/replay/render',
+                path: '/' + path,
                 rejectUnauthorized: false,
                 method: 'POST',
                 headers: {
@@ -85,7 +84,7 @@ class ReplayService {
                         all_data += d;
                     });
                     res.on('end', () => {
-                        this.instance.log('debug', `received data from post: ${all_data}`);
+                        // this.instance.log('debug', `received data from post: ${all_data}`)
                         resolve(JSON.parse(all_data));
                     });
                 });

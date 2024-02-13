@@ -1,6 +1,6 @@
 import LoLInstance from './'
 import type { CompanionVariableDefinition } from '@companion-module/base'
-import { replayAPIInstance } from './data'
+import { renderInstance, playbackInstance } from './data'
 import { prettyfyStr } from './utils'
 
 export class Variables {
@@ -21,7 +21,8 @@ export class Variables {
         }
       })
     }
-    iterateKeys(replayAPIInstance)
+    iterateKeys(renderInstance)
+    iterateKeys(playbackInstance)
 
     this.variables = replayAPIKeys.map(key => ({
       variableId: key,
@@ -33,7 +34,7 @@ export class Variables {
     this.instance.setVariableDefinitions(this.variables)
   }
 
-  UpdateVariable(data: ReplayAPI): void {
+  UpdateVariable(data: Render | Playback): void {
     for (const [key, value] of Object.entries(data)) {
       if (typeof value === 'object' && value !== null) {
         Object.keys(value).forEach(subKey => {

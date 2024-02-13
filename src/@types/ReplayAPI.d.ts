@@ -1,4 +1,4 @@
-interface ReplayAPI {
+interface Render {
   banners: boolean
   cameraAttached: boolean
   cameraLookSpeed: number
@@ -59,6 +59,14 @@ interface ReplayAPI {
   skyboxRadius: number
   skyboxRotation: number
   sunDirection: SunDirection
+}
+
+interface Playback {
+  length: number
+  paused: boolean
+  seeking: boolean
+  speed: number
+  time: number
 }
 
 interface CameraPosition {
